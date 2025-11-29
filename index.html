@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Proforma Invoice Generator</title>
+
+<style>
+    body {
+        font-family: Arial, Helvetica, sans-serif;
+        margin:0; padding:0;
+        background:#f5f7fa;
+    }
+    .container {
+        max-width:900px;
+        margin:20px auto;
+        background:white;
+        padding:20px;
+        border-radius:10px;
+        box-shadow:0 4px 15px rgba(0,0,0,0.06);
+    }
+    h2 { margin-top:0; text-align:center; font-size:24px; }
+    label { font-weight:600; display:block; margin-top:12px; }
+    input, select, textarea {
+        width:100%; padding:10px;
+        margin-top:5px; font-size:14px;
+        border:1px solid #dcdcdc; border-radius:6px;
+    }
+    table {
+        width:100%;
+        border-collapse:collapse;
+        margin-top:15px;
+    }
+    th, td {
+        border:1px solid #e6e6e6;
+        padding:8px;
+        font-size:14px;
+    }
+    th {
+        background:#f2f4f8;
+        text-align:left;
+    }
+    .btn {
+        margin-top:20px;
+        padding:12px 16px;
+        font-size:16px;
+        background:#1976d2;
+        color:white;
+        border:none;
+        border-radius:8px;
+        cursor:pointer;
+        width:100%;
+        font-weight:700;
+    }
+    .btn:hover { background:#0d63b5; }
+    .add-row {
+        background:#eee; color:#444;
+        margin-top:10px; font-size:14px;
+        font-weight:600;
+    }
+    .row-flex {
+        display:flex;
+        gap:10px;
+    }
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<h2>Proforma Invoice Generator</h2>
+
+<!-- PARTIES -->
+<label>Select Party</label>
+<select id="partySelect"></select>
+
+<!-- PARTY DETAILS AUTO-FILL -->
+<div class="row-flex">
+    <div style="flex:1">
+        <label>Party Address</label>
+        <textarea id="partyAddress" rows="3" disabled></textarea>
+    </div>
+    <div style="flex:1">
+        <label>GSTIN</label>
+        <input id="partyGST" disabled>
+        <label>Phone</label>
+        <input id="partyPhone" disabled>
+    </div>
+</div>
+
+<!-- ITEMS TABLE -->
+<h3 style="margin-top:25px;">Items</h3>
+
+<table id="itemsTable">
+    <thead>
+        <tr>
+            <th style="width:40px">Sr</th>
+            <th>Item</th>
+            <th style="width:80px">Qty</th>
+            <th style="width:100px">Rate</th>
+            <th style="width:120px">Amount</th>
+        </tr>
+    </thead>
+    <tbody id="itemRows">
+    </tbody>
+</table>
+
+<button class="add-row" onclick="addRow()">+ Add Row</button>
+
+<!-- EXTRAS -->
+<h3 style="margin-top:25px;">Extras</h3>
+
+<label>Transport</label>
+<input id="transport">
+
+<label>Payment Terms</label>
+<input id="paymentTerms">
+
+<label>Notes</label>
+<textarea id="notes" rows="3"></textarea>
+
+<!-- BUTTON -->
+<button class="btn" onclick="generatePI()">Generate PI</button>
+
+</div>
+
+<script>
+// ----------------------------------
+// API URL (CHANGE THIS ONLY)
+// ----------------------------------
+const API_URL = "https://script.google.com/macros/s/AKfycbzzEMLNRQoVYMg_3g50lftHfv9gvFYZHHudFF9LqIhP7eLRFKiDaWajnX_CPJqNOStKnA/exec";   // <--- Replace with Apps Script URL
+
+
+// GLOBAL DATA
+let PARTIES = [];
+let ITEMS = [];
+
+
+// ----------------------------------
+// INIT: LOAD MASTERS
+// ----------------------------------
+window.onload = async function () {
+    const res = await fetch(API_URL + "?action=masters");
+    const data = await res.json();
+
+    PARTIES = data.parties || [];
+    ITEMS = data.items || [];
+
+    loadParties();
+    addDefaultRows();
+};
+
+
+// ----------------------------------
+// LOAD PARTY DROPDOWN
+// ----------------------------------
+function loadParties() {
+    const sel = document.getElementById("partySelect");
+    sel.innerHTML = `<option value="">Select Party</option>`;
+
+    PARTIES.forEach(p => {
+        sel.innerHTML += `<option value="${p.PartyID}">${p.PartyName}</option>`;
+    });
+
+    sel.onchange = fillPartyDetails;
+}
+
+
+// ----------------------------------
+// AUTO-FILL PARTY DETAILS
+// ----------------------------------
+function fillPartyDetails() {
+    const id = document.getElementById("partySelect").value;
+    const p = PARTIES.find(x => x.PartyID === id);
+
+    if (!p) return;
+
+    document.getElementById("partyAddress").value = p.Address;
+    document.getElementById("partyGST").value = p.GSTIN;
+    document.getElementById("partyPhone").value = p.Phone;
+}
+
+
+// ----------------------------------
+// ITEM ROWS (DEFAULT 3)
+// ----------------------------------
+function addDefaultRows() {
+    for (let i = 0; i < 3; i++) addRow();
+}
+
+function addRow() {
+    const tbody = document.getElementById("itemRows");
+    const rowIndex = tbody.children.length + 1;
+
+    const row = document.createElement("tr");
+    row.innerHTML = `
+        <td>${rowIndex}</td>
+        <td>
+            <select onchange="autoRate(this)">
+                <option value="">Select Item</option>
+                ${ITEMS.map(i => `<option value="${i.ItemID}">${i.ItemName}</option>`).join("")}
+            </select>
+        </td>
+        <td><input type="number" min="0" step="0.01" oninput="recalc()"></td>
+        <td><input type="number" min="0" step="0.01" oninput="recalc()"></td>
+        <td class="amount">0.00</td>
+    `;
+    tbody.appendChild(row);
+}
+
+
+// ----------------------------------
+// AUTO-FILL RATE WHEN ITEM SELECTED
+// ----------------------------------
+function autoRate(selectEl) {
+    const id = selectEl.value;
+    const item = ITEMS.find(i => i.ItemID === id);
+    
+    const row = selectEl.parentNode.parentNode;
+    const rateInput = row.children[3].querySelector("input");
+
+    if (item) rateInput.value = item.Rate;
+
+    recalc();
+}
+
+
+// ----------------------------------
+// RECALCULATE AMOUNTS
+// ----------------------------------
+function recalc() {
+    const rows = document.querySelectorAll("#itemRows tr");
+
+    rows.forEach(row => {
+        const qty = parseFloat(row.children[2].querySelector("input").value || 0);
+        const rate = parseFloat(row.children[3].querySelector("input").value || 0);
+        const amt = qty * rate;
+
+        row.children[4].innerText = amt.toFixed(2);
+    });
+}
+
+
+// ----------------------------------
+// GENERATE PI
+// ----------------------------------
+async function generatePI() {
+
+    const partyId = document.getElementById("partySelect").value;
+    if (!partyId) return alert("Please select a party");
+
+    // Collect items
+    const rows = document.querySelectorAll("#itemRows tr");
+    const items = [];
+
+    rows.forEach(r => {
+        const sel = r.children[1].querySelector("select");
+        const qty = r.children[2].querySelector("input").value;
+        const rate = r.children[3].querySelector("input").value;
+
+        if (sel.value && qty > 0) {
+            const item = ITEMS.find(i => i.ItemID === sel.value);
+            items.push({
+                ItemID: sel.value,
+                ItemName: item.ItemName,
+                Qty: qty,
+                Rate: rate,
+                UOM: item.UOM
+            });
+        }
+    });
+
+    if (items.length === 0) return alert("Please enter at least one item");
+
+    const payload = {
+        partyId,
+        items,
+        extras: {
+            transport: document.getElementById("transport").value,
+            paymentTerms: document.getElementById("paymentTerms").value,
+            notes: document.getElementById("notes").value
+        }
+    };
+
+    const url = API_URL + "?action=generate&data=" + encodeURIComponent(JSON.stringify(payload));
+
+    const res = await fetch(url);
+    const out = await res.json();
+
+    if (!out.ok) return alert("Error: " + out.error);
+
+    window.open(out.pdfUrl, "_blank");
+    alert("PI Generated: " + out.piNo);
+}
+
+</script>
+
+</body>
+</html>
