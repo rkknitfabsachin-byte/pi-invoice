@@ -7,7 +7,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Proforma Invoice Generator</title>
+<title>Proforma Invoice</title>
 <style>
   body{margin:0;background:#f6f8fa;font-family:Inter,Arial;}
   .wrap{max-width:850px;margin:20px auto;padding:15px;}
@@ -26,7 +26,7 @@
 </head>
 <body>
 <div class="wrap">
-  <h2>Proforma Invoice Generator</h2>
+  <h2>Proforma Invoice</h2>
 
   <div class="card" id="partyCard">
     <h3>Party Details</h3>
@@ -39,6 +39,9 @@
 
   <div class="card">
     <h3>PI Details</h3>
+
+    <label>PO Number</label>
+    <input id="poNumber" placeholder="Enter PO Number">
     <label>CRM</label>
     <input id="crm">
 
@@ -189,6 +192,7 @@ async function generatePI(){
     partyId: document.getElementById("partySelect").value,
     items: ITEMS,
     extras: {
+      poNumber: document.getElementById("poNumber").value,
       contactNumber: document.getElementById("contactNumber").value,
       crm: document.getElementById("crm").value,
       priority: document.getElementById("priority").value,
