@@ -3,297 +3,245 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Proforma Invoice Generator</title>
-
+<title>Proforma Invoice</title>
 <style>
-    body {
-        font-family: Arial, Helvetica, sans-serif;
-        margin:0; padding:0;
-        background:#f5f7fa;
-    }
-    .container {
-        max-width:900px;
-        margin:20px auto;
-        background:white;
-        padding:20px;
-        border-radius:10px;
-        box-shadow:0 4px 15px rgba(0,0,0,0.06);
-    }
-    h2 { margin-top:0; text-align:center; font-size:24px; }
-    label { font-weight:600; display:block; margin-top:12px; }
-    input, select, textarea {
-        width:100%; padding:10px;
-        margin-top:5px; font-size:14px;
-        border:1px solid #dcdcdc; border-radius:6px;
-    }
-    table {
-        width:100%;
-        border-collapse:collapse;
-        margin-top:15px;
-    }
-    th, td {
-        border:1px solid #e6e6e6;
-        padding:8px;
-        font-size:14px;
-    }
-    th {
-        background:#f2f4f8;
-        text-align:left;
-    }
-    .btn {
-        margin-top:20px;
-        padding:12px 16px;
-        font-size:16px;
-        background:#1976d2;
-        color:white;
-        border:none;
-        border-radius:8px;
-        cursor:pointer;
-        width:100%;
-        font-weight:700;
-    }
-    .btn:hover { background:#0d63b5; }
-    .add-row {
-        background:#eee; color:#444;
-        margin-top:10px; font-size:14px;
-        font-weight:600;
-    }
-    .row-flex {
-        display:flex;
-        gap:10px;
-    }
+  :root{
+    --bg:#f5f7fa;
+    --card:#fff;
+    --text:#0f172a;
+    --muted:#64748b;
+    --accent:#1976d2; /* blue theme */
+    --radius:14px;
+    --shadow:0 10px 30px rgba(2,8,23,.06);
+    --border:#e6eaf1;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,Arial,Helvetica,sans-serif}
+  .wrap{max-width:980px;margin:24px auto;padding:16px}
+  .header{background:linear-gradient(180deg,#ffffff,#f9fbff);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px 16px;margin-bottom:18px}
+  .title{font-weight:800;letter-spacing:.2px;font-size:22px;text-align:center}
+  .grid{display:grid;gap:14px}
+  @media(min-width:800px){.grid-2{grid-template-columns:1fr 1fr}}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px}
+  .card h3{margin:0 0 10px;font-size:14px;font-weight:800;letter-spacing:.6px;color:#3b3f46;text-transform:uppercase}
+  label{font-size:13px;color:var(--muted);font-weight:700}
+  input,select,textarea{width:100%;margin-top:6px;margin-bottom:10px;padding:12px;border:1px solid #e5e7eb;border-radius:10px;font-size:14px;background:#fcfdff}
+  textarea{resize:vertical}
+  table{width:100%;border-collapse:separate;border-spacing:0;margin-top:8px}
+  thead th{background:#f3f6fb;border-bottom:1px solid var(--border);padding:10px;font-size:13px;text-align:left}
+  tbody td{border-bottom:1px solid #f2f4f7;padding:10px;font-size:14px}
+  .right{text-align:right}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:none;background:var(--accent);color:#fff;padding:14px 16px;border-radius:12px;font-weight:800;cursor:pointer;box-shadow:0 6px 18px rgba(25,118,210,.25)}
+  .btn:active{transform:translateY(1px)}
+  .btn-ghost{background:#fff;color:#1e293b;border:1px solid var(--border)}
+  .toolbar{position:sticky;bottom:12px;z-index:10;display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;margin-top:16px}
+  .pill{display:inline-block;padding:6px 10px;border:1px solid var(--border);border-radius:999px;font-size:12px;color:var(--muted);background:#fff}
+  .totals{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+  .totals .pill strong{color:#0b1528}
 </style>
 </head>
-
 <body>
-<div class="container">
+  <div class="wrap">
+    <!-- Title only (per your choice) -->
+    <div class="header"><div class="title">Proforma Invoice Generator</div></div>
 
-<h2>Proforma Invoice Generator</h2>
+    <div class="grid grid-2">
+      <!-- Party -->
+      <div class="card">
+        <h3>Party</h3>
+        <label>Party</label>
+        <select id="partySelect"></select>
 
-<!-- PARTIES -->
-<label>Select Party</label>
-<select id="partySelect"></select>
+        <label>Address</label>
+        <textarea id="partyAddress" rows="4" disabled></textarea>
 
-<!-- PARTY DETAILS AUTO-FILL -->
-<div class="row-flex">
-    <div style="flex:1">
-        <label>Party Address</label>
-        <textarea id="partyAddress" rows="3" disabled></textarea>
+        <div class="grid grid-2">
+          <div>
+            <label>GSTIN</label>
+            <input id="partyGST" disabled>
+          </div>
+          <div>
+            <label>Phone</label>
+            <input id="partyPhone" disabled>
+          </div>
+        </div>
+      </div>
+
+      <!-- Extras -->
+      <div class="card">
+        <h3>Extras</h3>
+        <label>Transport</label>
+        <input id="transport" placeholder="e.g. By Road">
+
+        <label>Payment Terms</label>
+        <input id="paymentTerms" placeholder="e.g. Advance / 7 Days">
+
+        <label>Notes</label>
+        <textarea id="notes" rows="4" placeholder="Optional note for buyer"></textarea>
+        <div id="piPreview" class="pill" style="margin-top:6px">PI No: loading…</div>
+      </div>
     </div>
-    <div style="flex:1">
-        <label>GSTIN</label>
-        <input id="partyGST" disabled>
-        <label>Phone</label>
-        <input id="partyPhone" disabled>
-    </div>
-</div>
 
-<!-- ITEMS TABLE -->
-<h3 style="margin-top:25px;">Items</h3>
-
-<table id="itemsTable">
-    <thead>
-        <tr>
+    <!-- Items -->
+    <div class="card" style="margin-top:14px">
+      <h3>Items</h3>
+      <table>
+        <thead>
+          <tr>
             <th style="width:40px">Sr</th>
             <th>Item</th>
-            <th style="width:80px">Qty</th>
-            <th style="width:100px">Rate</th>
-            <th style="width:120px">Amount</th>
-        </tr>
-    </thead>
-    <tbody id="itemRows">
-    </tbody>
-</table>
+            <th class="right" style="width:90px">Qty</th>
+            <th class="right" style="width:110px">Rate</th>
+            <th class="right" style="width:120px">Amount</th>
+          </tr>
+        </thead>
+        <tbody id="itemRows"></tbody>
+      </table>
+      <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn-ghost btn" style="color:#0f172a" onclick="addRow()">+ Add Row</button>
+        <span class="pill">GST fixed @ 5%</span>
+      </div>
+    </div>
 
-<button class="add-row" onclick="addRow()">+ Add Row</button>
-
-<!-- EXTRAS -->
-<h3 style="margin-top:25px;">Extras</h3>
-
-<label>Transport</label>
-<input id="transport">
-
-<label>Payment Terms</label>
-<input id="paymentTerms">
-
-<label>Notes</label>
-<textarea id="notes" rows="3"></textarea>
-
-<!-- BUTTON -->
-<button class="btn" onclick="generatePI()">Generate PI</button>
-
-</div>
+    <!-- Totals + Actions -->
+    <div class="toolbar">
+      <div class="totals">
+        <span class="pill">Subtotal: <strong id="subtotal">₹ 0.00</strong></span>
+        <span class="pill">GST 5%: <strong id="gst">₹ 0.00</strong></span>
+        <span class="pill">Grand Total: <strong id="grandTotal">₹ 0.00</strong></span>
+      </div>
+      <button class="btn" onclick="generatePI()">Generate PI</button>
+    </div>
+  </div>
 
 <script>
-// ----------------------------------
-// API URL (CHANGE THIS ONLY)
-// ----------------------------------
-const API_URL = "https://script.google.com/macros/s/AKfycbzzEMLNRQoVYMg_3g50lftHfv9gvFYZHHudFF9LqIhP7eLRFKiDaWajnX_CPJqNOStKnA/exec";   // <--- Replace with Apps Script URL
+// ------------- CONFIG -------------
+const API_URL = "https://script.google.com/macros/s/AKfycbxJgQOV2Ip19EpFJltnOAFaaGD1GX2iPub850ie0H4_fAF5fL35nFBcXuCC9-f0q5Lnxw/exec"; // <-- Replace with your Apps Script /exec URL
 
-
-// GLOBAL DATA
+// ------------- STATE -------------
 let PARTIES = [];
 let ITEMS = [];
+const GST_PERCENT = 5; // for live UI display only (backend is authoritative)
 
+// ------------- INIT -------------
+window.addEventListener('load', async () => {
+  try {
+    const [mastersRes, nextRes] = await Promise.all([
+      fetch(API_URL + "?action=masters"),
+      fetch(API_URL + "?action=nextpi")
+    ]);
+    const masters = await mastersRes.json();
+    const nxt     = await nextRes.json();
 
-// ----------------------------------
-// INIT: LOAD MASTERS
-// ----------------------------------
-window.onload = async function () {
-    const res = await fetch(API_URL + "?action=masters");
-    const data = await res.json();
-
-    PARTIES = data.parties || [];
-    ITEMS = data.items || [];
+    PARTIES = masters.parties || [];
+    ITEMS   = masters.items   || [];
 
     loadParties();
-    addDefaultRows();
-};
+    addDefaultRows(3); // default 3 rows
+    document.getElementById('piPreview').textContent = "PI No: " + (nxt.nextPI || "—");
+  } catch (e) {
+    alert("Failed to load masters: " + e);
+  }
+});
 
-
-// ----------------------------------
-// LOAD PARTY DROPDOWN
-// ----------------------------------
-function loadParties() {
-    const sel = document.getElementById("partySelect");
-    sel.innerHTML = `<option value="">Select Party</option>`;
-
-    PARTIES.forEach(p => {
-        sel.innerHTML += `<option value="${p.PartyID}">${p.PartyName}</option>`;
-    });
-
-    sel.onchange = fillPartyDetails;
+// ------------- PARTY -------------
+function loadParties(){
+  const sel = document.getElementById('partySelect');
+  sel.innerHTML = `<option value="">Select Party</option>` + PARTIES.map(p=>`<option value="${p.PartyID}">${p.PartyName}</option>`).join('');
+  sel.addEventListener('change', fillPartyDetails);
+}
+function fillPartyDetails(){
+  const id = document.getElementById('partySelect').value;
+  const p = PARTIES.find(x=>x.PartyID===id);
+  if (!p) return;
+  document.getElementById('partyAddress').value = p.Address || '';
+  document.getElementById('partyGST').value     = p.GSTIN   || '';
+  document.getElementById('partyPhone').value   = p.Phone   || '';
 }
 
-
-// ----------------------------------
-// AUTO-FILL PARTY DETAILS
-// ----------------------------------
-function fillPartyDetails() {
-    const id = document.getElementById("partySelect").value;
-    const p = PARTIES.find(x => x.PartyID === id);
-
-    if (!p) return;
-
-    document.getElementById("partyAddress").value = p.Address;
-    document.getElementById("partyGST").value = p.GSTIN;
-    document.getElementById("partyPhone").value = p.Phone;
+// ------------- ITEMS -------------
+function addDefaultRows(n=3){ for (let i=0;i<n;i++) addRow(); recalc(); }
+function addRow(){
+  const tbody = document.getElementById('itemRows');
+  const idx = tbody.children.length + 1;
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td>${idx}</td>
+    <td>
+      <select onchange="autoRate(this)">
+        <option value="">Select Item</option>
+        ${ITEMS.map(i=>`<option value="${i.ItemID}">${i.ItemName}</option>`).join('')}
+      </select>
+    </td>
+    <td class="right"><input type="number" min="0" step="0.01" oninput="recalc()" placeholder="0.00"></td>
+    <td class="right"><input type="number" min="0" step="0.01" oninput="recalc()" placeholder="0.00"></td>
+    <td class="right amount">0.00</td>
+  `;
+  document.getElementById('itemRows').appendChild(tr);
 }
-
-
-// ----------------------------------
-// ITEM ROWS (DEFAULT 3)
-// ----------------------------------
-function addDefaultRows() {
-    for (let i = 0; i < 3; i++) addRow();
+function autoRate(sel){
+  const id = sel.value;
+  const item = ITEMS.find(i=>i.ItemID===id);
+  const row  = sel.closest('tr');
+  if (item){
+    row.children[3].querySelector('input').value = Number(item.Rate||0).toFixed(2);
+  }
+  recalc();
 }
-
-function addRow() {
-    const tbody = document.getElementById("itemRows");
-    const rowIndex = tbody.children.length + 1;
-
-    const row = document.createElement("tr");
-    row.innerHTML = `
-        <td>${rowIndex}</td>
-        <td>
-            <select onchange="autoRate(this)">
-                <option value="">Select Item</option>
-                ${ITEMS.map(i => `<option value="${i.ItemID}">${i.ItemName}</option>`).join("")}
-            </select>
-        </td>
-        <td><input type="number" min="0" step="0.01" oninput="recalc()"></td>
-        <td><input type="number" min="0" step="0.01" oninput="recalc()"></td>
-        <td class="amount">0.00</td>
-    `;
-    tbody.appendChild(row);
+function recalc(){
+  let subtotal = 0;
+  document.querySelectorAll('#itemRows tr').forEach(row=>{
+    const qty  = parseFloat(row.children[2].querySelector('input').value||0);
+    const rate = parseFloat(row.children[3].querySelector('input').value||0);
+    const amt = qty*rate;
+    row.querySelector('.amount').textContent = amt.toFixed(2);
+    subtotal += amt;
+  });
+  const gst  = subtotal * (GST_PERCENT/100);
+  const gtot = subtotal + gst;
+  document.getElementById('subtotal').textContent = formatMoney(subtotal);
+  document.getElementById('gst').textContent      = formatMoney(gst);
+  document.getElementById('grandTotal').textContent= formatMoney(gtot);
 }
+function formatMoney(n){ return "₹ " + (Number(n)||0).toFixed(2); }
 
+// ------------- GENERATE -------------
+async function generatePI(){
+  const partyId = document.getElementById('partySelect').value;
+  if (!partyId) return alert("Please select a party");
 
-// ----------------------------------
-// AUTO-FILL RATE WHEN ITEM SELECTED
-// ----------------------------------
-function autoRate(selectEl) {
-    const id = selectEl.value;
-    const item = ITEMS.find(i => i.ItemID === id);
-    
-    const row = selectEl.parentNode.parentNode;
-    const rateInput = row.children[3].querySelector("input");
+  const items = [];
+  document.querySelectorAll('#itemRows tr').forEach(row=>{
+    const sel  = row.children[1].querySelector('select');
+    const qty  = parseFloat(row.children[2].querySelector('input').value||0);
+    const rate = parseFloat(row.children[3].querySelector('input').value||0);
+    if (sel.value && qty>0){
+      const item = ITEMS.find(i=>i.ItemID===sel.value);
+      items.push({ ItemID: sel.value, ItemName: item.ItemName, Qty: qty, Rate: rate, UOM: item.UOM });
+    }
+  });
+  if (items.length===0) return alert("Please add at least one item");
 
-    if (item) rateInput.value = item.Rate;
+  const payload = {
+    partyId,
+    items,
+    extras: {
+      transport: document.getElementById('transport').value,
+      paymentTerms: document.getElementById('paymentTerms').value,
+      notes: document.getElementById('notes').value
+    }
+  };
 
-    recalc();
-}
-
-
-// ----------------------------------
-// RECALCULATE AMOUNTS
-// ----------------------------------
-function recalc() {
-    const rows = document.querySelectorAll("#itemRows tr");
-
-    rows.forEach(row => {
-        const qty = parseFloat(row.children[2].querySelector("input").value || 0);
-        const rate = parseFloat(row.children[3].querySelector("input").value || 0);
-        const amt = qty * rate;
-
-        row.children[4].innerText = amt.toFixed(2);
-    });
-}
-
-
-// ----------------------------------
-// GENERATE PI
-// ----------------------------------
-async function generatePI() {
-
-    const partyId = document.getElementById("partySelect").value;
-    if (!partyId) return alert("Please select a party");
-
-    // Collect items
-    const rows = document.querySelectorAll("#itemRows tr");
-    const items = [];
-
-    rows.forEach(r => {
-        const sel = r.children[1].querySelector("select");
-        const qty = r.children[2].querySelector("input").value;
-        const rate = r.children[3].querySelector("input").value;
-
-        if (sel.value && qty > 0) {
-            const item = ITEMS.find(i => i.ItemID === sel.value);
-            items.push({
-                ItemID: sel.value,
-                ItemName: item.ItemName,
-                Qty: qty,
-                Rate: rate,
-                UOM: item.UOM
-            });
-        }
-    });
-
-    if (items.length === 0) return alert("Please enter at least one item");
-
-    const payload = {
-        partyId,
-        items,
-        extras: {
-            transport: document.getElementById("transport").value,
-            paymentTerms: document.getElementById("paymentTerms").value,
-            notes: document.getElementById("notes").value
-        }
-    };
-
-    const url = API_URL + "?action=generate&data=" + encodeURIComponent(JSON.stringify(payload));
-
-    const res = await fetch(url);
+  try{
+    const res = await fetch(API_URL + "?action=generate&data=" + encodeURIComponent(JSON.stringify(payload)));
     const out = await res.json();
-
     if (!out.ok) return alert("Error: " + out.error);
-
     window.open(out.pdfUrl, "_blank");
     alert("PI Generated: " + out.piNo);
+  }catch(e){
+    alert("Failed: " + e);
+  }
 }
-
 </script>
-
 </body>
 </html>
