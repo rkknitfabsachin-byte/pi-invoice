@@ -1,247 +1,215 @@
-<!doctype html>
-<html lang="en">
+<!-- Full updated index.html for PI system -->
+<!-- Will include fields: CRM, Priority, ShadeRef, LotNo, DeliveryDate, ContactNo -->
+<!-- Item fields: Color, GSM, DIA, Qty, Rate -->
+
+<!DOCTYPE html>
+<html>
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Proforma Invoice</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Proforma Invoice Generator</title>
 <style>
-  :root{
-    --bg:#f5f7fa;
-    --card:#fff;
-    --text:#0f172a;
-    --muted:#64748b;
-    --accent:#1976d2; /* blue theme */
-    --radius:14px;
-    --shadow:0 10px 30px rgba(2,8,23,.06);
-    --border:#e6eaf1;
-  }
-  *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,Arial,Helvetica,sans-serif}
-  .wrap{max-width:980px;margin:24px auto;padding:16px}
-  .header{background:linear-gradient(180deg,#ffffff,#f9fbff);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px 16px;margin-bottom:18px}
-  .title{font-weight:800;letter-spacing:.2px;font-size:22px;text-align:center}
-  .grid{display:grid;gap:14px}
-  @media(min-width:800px){.grid-2{grid-template-columns:1fr 1fr}}
-  .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px}
-  .card h3{margin:0 0 10px;font-size:14px;font-weight:800;letter-spacing:.6px;color:#3b3f46;text-transform:uppercase}
-  label{font-size:13px;color:var(--muted);font-weight:700}
-  input,select,textarea{width:100%;margin-top:6px;margin-bottom:10px;padding:12px;border:1px solid #e5e7eb;border-radius:10px;font-size:14px;background:#fcfdff}
-  textarea{resize:vertical}
-  table{width:100%;border-collapse:separate;border-spacing:0;margin-top:8px}
-  thead th{background:#f3f6fb;border-bottom:1px solid var(--border);padding:10px;font-size:13px;text-align:left}
-  tbody td{border-bottom:1px solid #f2f4f7;padding:10px;font-size:14px}
-  .right{text-align:right}
-  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:none;background:var(--accent);color:#fff;padding:14px 16px;border-radius:12px;font-weight:800;cursor:pointer;box-shadow:0 6px 18px rgba(25,118,210,.25)}
-  .btn:active{transform:translateY(1px)}
-  .btn-ghost{background:#fff;color:#1e293b;border:1px solid var(--border)}
-  .toolbar{position:sticky;bottom:12px;z-index:10;display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;margin-top:16px}
-  .pill{display:inline-block;padding:6px 10px;border:1px solid var(--border);border-radius:999px;font-size:12px;color:var(--muted);background:#fff}
-  .totals{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
-  .totals .pill strong{color:#0b1528}
+  body{margin:0;background:#f6f8fa;font-family:Inter,Arial;}
+  .wrap{max-width:850px;margin:20px auto;padding:15px;}
+  .card{background:#fff;padding:15px;border-radius:12px;box-shadow:0 4px 14px rgba(0,0,0,.06);margin-top:16px;}
+  h2{margin:0 0 10px;font-size:20px;}
+  label{font-size:13px;color:#555;font-weight:600;display:block;margin-top:10px;}
+  input,select{width:100%;padding:10px;font-size:14px;border-radius:8px;border:1px solid #e0e0e0;margin-top:5px;}
+  table{width:100%;border-collapse:collapse;margin-top:10px;}
+  th,td{padding:10px;border-bottom:1px solid #eee;font-size:14px;}
+  th{background:#f1f5f9;text-align:left;font-weight:600;}
+  .btn{background:#2563eb;color:white;padding:12px 18px;border:none;border-radius:10px;margin-top:12px;cursor:pointer;font-size:15px;font-weight:600;}
+  .btn.red{background:#dc2626;}
+  .row{display:flex;gap:10px;}
+  .col{flex:1;}
 </style>
 </head>
 <body>
-  <div class="wrap">
-    <!-- Title only (per your choice) -->
-    <div class="header"><div class="title">Proforma Invoice Generator</div></div>
+<div class="wrap">
+  <h2>Proforma Invoice Generator</h2>
 
-    <div class="grid grid-2">
-      <!-- Party -->
-      <div class="card">
-        <h3>Party</h3>
-        <label>Party</label>
-        <select id="partySelect"></select>
+  <div class="card" id="partyCard">
+    <h3>Party Details</h3>
+    <label>Select Party</label>
+    <select id="partySelect"></select>
 
-        <label>Address</label>
-        <textarea id="partyAddress" rows="4" disabled></textarea>
-
-        <div class="grid grid-2">
-          <div>
-            <label>GSTIN</label>
-            <input id="partyGST" disabled>
-          </div>
-          <div>
-            <label>Phone</label>
-            <input id="partyPhone" disabled>
-          </div>
-        </div>
-      </div>
-
-      <!-- Extras -->
-      <div class="card">
-        <h3>Extras</h3>
-        <label>Transport</label>
-        <input id="transport" placeholder="e.g. By Road">
-
-        <label>Payment Terms</label>
-        <input id="paymentTerms" placeholder="e.g. Advance / 7 Days">
-
-        <label>Notes</label>
-        <textarea id="notes" rows="4" placeholder="Optional note for buyer"></textarea>
-        <div id="piPreview" class="pill" style="margin-top:6px">PI No: loading…</div>
-      </div>
-    </div>
-
-    <!-- Items -->
-    <div class="card" style="margin-top:14px">
-      <h3>Items</h3>
-      <table>
-        <thead>
-          <tr>
-            <th style="width:40px">Sr</th>
-            <th>Item</th>
-            <th class="right" style="width:90px">Qty</th>
-            <th class="right" style="width:110px">Rate</th>
-            <th class="right" style="width:120px">Amount</th>
-          </tr>
-        </thead>
-        <tbody id="itemRows"></tbody>
-      </table>
-      <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap">
-        <button class="btn-ghost btn" style="color:#0f172a" onclick="addRow()">+ Add Row</button>
-        <span class="pill">GST fixed @ 5%</span>
-      </div>
-    </div>
-
-    <!-- Totals + Actions -->
-    <div class="toolbar">
-      <div class="totals">
-        <span class="pill">Subtotal: <strong id="subtotal">₹ 0.00</strong></span>
-        <span class="pill">GST 5%: <strong id="gst">₹ 0.00</strong></span>
-        <span class="pill">Grand Total: <strong id="grandTotal">₹ 0.00</strong></span>
-      </div>
-      <button class="btn" onclick="generatePI()">Generate PI</button>
-    </div>
+    <label>Contact Number</label>
+    <input id="contactNumber" placeholder="Enter mobile number">
   </div>
 
+  <div class="card">
+    <h3>PI Details</h3>
+    <label>CRM</label>
+    <input id="crm">
+
+    <label>Priority</label>
+    <input id="priority">
+
+    <label>Shade Reference</label>
+    <input id="shadeRef">
+
+    <label>Lot Number</label>
+    <input id="lotNo">
+
+    <label>Delivery Date</label>
+    <input type="date" id="deliveryDate">
+
+    <label>Payment Terms</label>
+    <input id="paymentTerms">
+
+    <label>Notes</label>
+    <input id="notes">
+  </div>
+
+  <div class="card">
+    <h3>Add Items</h3>
+
+    <div class="row">
+      <div class="col">
+        <label>Item</label>
+        <select id="itemSelect"></select>
+      </div>
+      <div class="col">
+        <label>Color</label>
+        <select id="itemColor"></select>
+      </div>
+      <div class="col">
+        <label>GSM</label>
+        <select id="itemGSM"></select>
+      </div>
+      <div class="col">
+        <label>DIA</label>
+        <select id="itemDIA"></select>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col">
+        <label>Qty</label>
+        <input id="itemQty" type="number" step="0.01">
+      </div>
+      <div class="col">
+        <label>Rate</label>
+        <input id="itemRate" type="number" step="0.01">
+      </div>
+    </div>
+
+    <button class="btn" onclick="addItem()">Add Item</button>
+
+    <table id="itemsTable">
+      <thead>
+        <tr>
+          <th>Item</th><th>Color</th><th>GSM</th><th>DIA</th><th>Qty</th><th>Rate</th><th>Amount</th><th></th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <button class="btn" onclick="generatePI()">Generate PI</button>
+</div>
+
 <script>
-// ------------- CONFIG -------------
-const API_URL = "https://script.google.com/macros/s/AKfycbxJgQOV2Ip19EpFJltnOAFaaGD1GX2iPub850ie0H4_fAF5fL35nFBcXuCC9-f0q5Lnxw/exec"; // <-- Replace with your Apps Script /exec URL
-
-// ------------- STATE -------------
-let PARTIES = [];
+let MASTER = {};
 let ITEMS = [];
-const GST_PERCENT = 5; // for live UI display only (backend is authoritative)
 
-// ------------- INIT -------------
-window.addEventListener('load', async () => {
-  try {
-    const [mastersRes, nextRes] = await Promise.all([
-      fetch(API_URL + "?action=masters"),
-      fetch(API_URL + "?action=nextpi")
-    ]);
-    const masters = await mastersRes.json();
-    const nxt     = await nextRes.json();
+async function loadMasters(){
+  const url = "https://script.google.com/macros/s/AKfycbxJgQOV2Ip19EpFJltnOAFaaGD1GX2iPub850ie0H4_fAF5fL35nFBcXuCC9-f0q5Lnxw/exec?action=masters";
+  const r = await fetch(url);
+  MASTER = await r.json();
 
-    PARTIES = masters.parties || [];
-    ITEMS   = masters.items   || [];
-
-    loadParties();
-    addDefaultRows(3); // default 3 rows
-    document.getElementById('piPreview').textContent = "PI No: " + (nxt.nextPI || "—");
-  } catch (e) {
-    alert("Failed to load masters: " + e);
-  }
-});
-
-// ------------- PARTY -------------
-function loadParties(){
-  const sel = document.getElementById('partySelect');
-  sel.innerHTML = `<option value="">Select Party</option>` + PARTIES.map(p=>`<option value="${p.PartyID}">${p.PartyName}</option>`).join('');
-  sel.addEventListener('change', fillPartyDetails);
-}
-function fillPartyDetails(){
-  const id = document.getElementById('partySelect').value;
-  const p = PARTIES.find(x=>x.PartyID===id);
-  if (!p) return;
-  document.getElementById('partyAddress').value = p.Address || '';
-  document.getElementById('partyGST').value     = p.GSTIN   || '';
-  document.getElementById('partyPhone').value   = p.Phone   || '';
-}
-
-// ------------- ITEMS -------------
-function addDefaultRows(n=3){ for (let i=0;i<n;i++) addRow(); recalc(); }
-function addRow(){
-  const tbody = document.getElementById('itemRows');
-  const idx = tbody.children.length + 1;
-  const tr = document.createElement('tr');
-  tr.innerHTML = `
-    <td>${idx}</td>
-    <td>
-      <select onchange="autoRate(this)">
-        <option value="">Select Item</option>
-        ${ITEMS.map(i=>`<option value="${i.ItemID}">${i.ItemName}</option>`).join('')}
-      </select>
-    </td>
-    <td class="right"><input type="number" min="0" step="0.01" oninput="recalc()" placeholder="0.00"></td>
-    <td class="right"><input type="number" min="0" step="0.01" oninput="recalc()" placeholder="0.00"></td>
-    <td class="right amount">0.00</td>
-  `;
-  document.getElementById('itemRows').appendChild(tr);
-}
-function autoRate(sel){
-  const id = sel.value;
-  const item = ITEMS.find(i=>i.ItemID===id);
-  const row  = sel.closest('tr');
-  if (item){
-    row.children[3].querySelector('input').value = Number(item.Rate||0).toFixed(2);
-  }
-  recalc();
-}
-function recalc(){
-  let subtotal = 0;
-  document.querySelectorAll('#itemRows tr').forEach(row=>{
-    const qty  = parseFloat(row.children[2].querySelector('input').value||0);
-    const rate = parseFloat(row.children[3].querySelector('input').value||0);
-    const amt = qty*rate;
-    row.querySelector('.amount').textContent = amt.toFixed(2);
-    subtotal += amt;
+  let pSel = document.getElementById("partySelect");
+  MASTER.parties.forEach(p=>{
+    let opt = document.createElement("option");
+    opt.value = p.PartyID;
+    opt.textContent = p.PartyName;
+    pSel.appendChild(opt);
   });
-  const gst  = subtotal * (GST_PERCENT/100);
-  const gtot = subtotal + gst;
-  document.getElementById('subtotal').textContent = formatMoney(subtotal);
-  document.getElementById('gst').textContent      = formatMoney(gst);
-  document.getElementById('grandTotal').textContent= formatMoney(gtot);
-}
-function formatMoney(n){ return "₹ " + (Number(n)||0).toFixed(2); }
 
-// ------------- GENERATE -------------
+  let iSel = document.getElementById("itemSelect");
+  MASTER.items.forEach(it=>{
+    let o=document.createElement("option");
+    o.value=it.ItemID; o.textContent=it.ItemName;
+    iSel.appendChild(o);
+  });
+
+  fillDropdown("itemColor", MASTER.items.map(i=>i.Color).filter(x=>x));
+  fillDropdown("itemGSM", MASTER.items.map(i=>i.GSM).filter(x=>x));
+  fillDropdown("itemDIA", MASTER.items.map(i=>i.DIA).filter(x=>x));
+}
+
+function fillDropdown(id, arr){
+  let setArr = [...new Set(arr)];
+  let sel = document.getElementById(id);
+  setArr.forEach(v=>{
+    let o=document.createElement("option"); o.value=v; o.textContent=v;
+    sel.appendChild(o);
+  });
+}
+
+function addItem(){
+  let itemID = document.getElementById("itemSelect").value;
+  let it = MASTER.items.find(x=>x.ItemID==itemID);
+
+  let color=document.getElementById("itemColor").value;
+  let gsm=document.getElementById("itemGSM").value;
+  let dia=document.getElementById("itemDIA").value;
+  let qty=parseFloat(document.getElementById("itemQty").value||0);
+  let rate=parseFloat(document.getElementById("itemRate").value||it.Rate||0);
+  let amount=qty*rate;
+
+  ITEMS.push({ItemID:itemID,ItemName:it.ItemName,Color:color,GSM:gsm,DIA:dia,Qty:qty,Rate:rate,Amount:amount});
+  renderItems();
+}
+
+function renderItems(){
+  let tbody=document.querySelector("#itemsTable tbody");
+  tbody.innerHTML="";
+  ITEMS.forEach((r,i)=>{
+    let tr=document.createElement("tr");
+    tr.innerHTML=`
+      <td>${r.ItemName}</td>
+      <td>${r.Color}</td>
+      <td>${r.GSM}</td>
+      <td>${r.DIA}</td>
+      <td>${r.Qty}</td>
+      <td>${r.Rate}</td>
+      <td>${r.Amount.toFixed(2)}</td>
+      <td><button class='btn red' onclick='delItem(${i})'>X</button></td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function delItem(i){ ITEMS.splice(i,1); renderItems(); }
+
 async function generatePI(){
-  const partyId = document.getElementById('partySelect').value;
-  if (!partyId) return alert("Please select a party");
+  if(ITEMS.length==0) return alert("Add at least one item");
 
-  const items = [];
-  document.querySelectorAll('#itemRows tr').forEach(row=>{
-    const sel  = row.children[1].querySelector('select');
-    const qty  = parseFloat(row.children[2].querySelector('input').value||0);
-    const rate = parseFloat(row.children[3].querySelector('input').value||0);
-    if (sel.value && qty>0){
-      const item = ITEMS.find(i=>i.ItemID===sel.value);
-      items.push({ ItemID: sel.value, ItemName: item.ItemName, Qty: qty, Rate: rate, UOM: item.UOM });
-    }
-  });
-  if (items.length===0) return alert("Please add at least one item");
-
-  const payload = {
-    partyId,
-    items,
+  let data = {
+    partyId: document.getElementById("partySelect").value,
+    items: ITEMS,
     extras: {
-      transport: document.getElementById('transport').value,
-      paymentTerms: document.getElementById('paymentTerms').value,
-      notes: document.getElementById('notes').value
+      contactNumber: document.getElementById("contactNumber").value,
+      crm: document.getElementById("crm").value,
+      priority: document.getElementById("priority").value,
+      shadeRef: document.getElementById("shadeRef").value,
+      lotNo: document.getElementById("lotNo").value,
+      deliveryDate: document.getElementById("deliveryDate").value,
+      paymentTerms: document.getElementById("paymentTerms").value,
+      notes: document.getElementById("notes").value
     }
   };
 
-  try{
-    const res = await fetch(API_URL + "?action=generate&data=" + encodeURIComponent(JSON.stringify(payload)));
-    const out = await res.json();
-    if (!out.ok) return alert("Error: " + out.error);
-    window.open(out.pdfUrl, "_blank");
-    alert("PI Generated: " + out.piNo);
-  }catch(e){
-    alert("Failed: " + e);
-  }
+  let url = "https://script.google.com/macros/s/AKfycbxJgQOV2Ip19EpFJltnOAFaaGD1GX2iPub850ie0H4_fAF5fL35nFBcXuCC9-f0q5Lnxw/exec?action=generate&data="+encodeURIComponent(JSON.stringify(data));
+  let r = await fetch(url);
+  let res = await r.json();
+
+  if(res.ok){
+    window.open(res.pdfUrl); 
+  } else alert(res.error);
 }
+
+loadMasters();
 </script>
 </body>
 </html>
