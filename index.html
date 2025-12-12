@@ -1,47 +1,191 @@
-<!-- Full updated index.html for PI system -->
-<!-- Will include fields: CRM, Priority, ShadeRef, LotNo, DeliveryDate, ContactNo -->
-<!-- Item fields: Color, GSM, DIA, Qty, Rate -->
-
 <!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Proforma Invoice</title>
+
 <style>
-  body{margin:0;background:#f6f8fa;font-family:Inter,Arial;}
-  .wrap{max-width:850px;margin:20px auto;padding:15px;}
-  .card{background:#fff;padding:15px;border-radius:12px;box-shadow:0 4px 14px rgba(0,0,0,.06);margin-top:16px;}
-  h2{margin:0 0 10px;font-size:20px;}
-  label{font-size:13px;color:#555;font-weight:600;display:block;margin-top:10px;}
-  input,select{width:100%;padding:10px;font-size:14px;border-radius:8px;border:1px solid #e0e0e0;margin-top:5px;}
-  table{width:100%;border-collapse:collapse;margin-top:10px;}
-  th,td{padding:10px;border-bottom:1px solid #eee;font-size:14px;}
-  th{background:#f1f5f9;text-align:left;font-weight:600;}
-  .btn{background:#2563eb;color:white;padding:12px 18px;border:none;border-radius:10px;margin-top:12px;cursor:pointer;font-size:15px;font-weight:600;}
-  .btn.red{background:#dc2626;}
-  .row{display:flex;gap:10px;}
-  .col{flex:1;}
+/* ===== GLOBAL ===== */
+body{
+  margin:0;
+  background:linear-gradient(to bottom right,#dbeafe,#f8fafc);
+  font-family:Inter,Arial;
+  animation:fadeIn .6s ease;
+}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+
+.wrap{
+  max-width:900px;
+  margin:25px auto;
+  padding:15px;
+}
+
+/* ===== GLASS CARD ===== */
+.card{
+  background:rgba(255,255,255,0.7);
+  backdrop-filter:blur(12px);
+  padding:22px;
+  border-radius:20px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.10);
+  margin-top:20px;
+  transition:.3s;
+}
+.card:hover{
+  transform:translateY(-3px);
+  box-shadow:0 15px 35px rgba(0,0,0,0.15);
+}
+
+h2{
+  font-size:26px;
+  font-weight:700;
+  text-align:center;
+  margin-bottom:20px;
+}
+h3{
+  font-size:18px;
+  margin-bottom:15px;
+}
+
+label{
+  font-size:14px;
+  font-weight:600;
+  margin-top:15px;
+  display:block;
+}
+
+/* ===== INPUTS ===== */
+input,select{
+  width:100%;
+  padding:12px;
+  margin-top:6px;
+  border-radius:12px;
+  border:1px solid #d1d5db;
+  background:rgba(255,255,255,0.8);
+  transition:.2s;
+}
+input:focus,select:focus{
+  border-color:#3b82f6;
+  outline:none;
+  background:white;
+}
+
+/* ===== ROW FLEX ===== */
+.row{
+  display:flex;
+  gap:12px;
+}
+.col{flex:1;}
+
+/* ===== TABLE ===== */
+table{
+  width:100%;
+  margin-top:15px;
+  border-collapse:collapse;
+  backdrop-filter:blur(12px);
+  overflow:hidden;
+  border-radius:15px;
+}
+th{
+  background:#e2e8f0;
+  padding:12px;
+  font-size:14px;
+}
+td{
+  background:rgba(255,255,255,0.7);
+  padding:12px;
+}
+tr:hover td{
+  background:#f1f5f9;
+}
+
+/* ===== BUTTONS ===== */
+.btn{
+  background:linear-gradient(to right,#2563eb,#4780ff);
+  color:white;
+  padding:12px 18px;
+  border:none;
+  border-radius:12px;
+  cursor:pointer;
+  margin-top:15px;
+  font-size:15px;
+  font-weight:600;
+  box-shadow:0 6px 15px rgba(37,99,235,0.35);
+  transition:.25s;
+}
+.btn:hover{
+  transform:translateY(-3px);
+  box-shadow:0 10px 20px rgba(37,99,235,0.45);
+}
+.btn.red{
+  background:#dc2626;
+  box-shadow:0 6px 15px rgba(220,38,38,0.35);
+}
+
+/* ======= SEARCHABLE DROPDOWN COMPONENT ======= */
+.searchBoxWrapper{
+  position:relative;
+}
+
+.searchInput{
+  width:100%;
+  padding:10px;
+  border:1px solid #cbd5e1;
+  border-radius:10px;
+  margin-bottom:8px;
+}
+
+.customDropdown{
+  position:absolute;
+  top:100%;
+  left:0;
+  right:0;
+  background:white;
+  border-radius:12px;
+  border:1px solid #ddd;
+  max-height:220px;
+  overflow-y:auto;
+  display:none;
+  z-index:999;
+  box-shadow:0 8px 20px rgba(0,0,0,0.15);
+}
+
+.customDropdown div{
+  padding:10px;
+  cursor:pointer;
+}
+.customDropdown div:hover{
+  background:#e5f0ff;
+}
 </style>
 </head>
+
 <body>
 <div class="wrap">
   <h2>Proforma Invoice</h2>
 
-  <div class="card" id="partyCard">
+  <!-- PARTY -->
+  <div class="card">
     <h3>Party Details</h3>
+
     <label>Select Party</label>
-    <select id="partySelect"></select>
+    <div class="searchBoxWrapper">
+      <input class="searchInput" placeholder="Search party..." oninput="filterDropdown(this,'partySelect')">
+      <select id="partySelect"></select>
+      <div class="customDropdown" data-for="partySelect"></div>
+    </div>
 
     <label>Contact Number</label>
     <input id="contactNumber" placeholder="Enter mobile number">
   </div>
 
+  <!-- PI DETAILS -->
   <div class="card">
     <h3>PI Details</h3>
 
     <label>PO Number</label>
-    <input id="poNumber" placeholder="Enter PO Number">
+    <input id="poNumber">
+
     <label>CRM</label>
     <input id="crm">
 
@@ -64,25 +208,45 @@
     <input id="notes">
   </div>
 
+  <!-- ITEMS -->
   <div class="card">
     <h3>Add Items</h3>
 
     <div class="row">
       <div class="col">
         <label>Item</label>
-        <select id="itemSelect"></select>
+        <div class="searchBoxWrapper">
+          <input class="searchInput" placeholder="Search item..." oninput="filterDropdown(this,'itemSelect')">
+          <select id="itemSelect"></select>
+          <div class="customDropdown" data-for="itemSelect"></div>
+        </div>
       </div>
+
       <div class="col">
         <label>Color</label>
-        <select id="itemColor"></select>
+        <div class="searchBoxWrapper">
+          <input class="searchInput" placeholder="Search color..." oninput="filterDropdown(this,'itemColor')">
+          <select id="itemColor"></select>
+          <div class="customDropdown" data-for="itemColor"></div>
+        </div>
       </div>
+
       <div class="col">
         <label>GSM</label>
-        <select id="itemGSM"></select>
+        <div class="searchBoxWrapper">
+          <input class="searchInput" placeholder="Search GSM..." oninput="filterDropdown(this,'itemGSM')">
+          <select id="itemGSM"></select>
+          <div class="customDropdown" data-for="itemGSM"></div>
+        </div>
       </div>
+
       <div class="col">
         <label>DIA</label>
-        <select id="itemDIA"></select>
+        <div class="searchBoxWrapper">
+          <input class="searchInput" placeholder="Search DIA..." oninput="filterDropdown(this,'itemDIA')">
+          <select id="itemDIA"></select>
+          <div class="customDropdown" data-for="itemDIA"></div>
+        </div>
       </div>
     </div>
 
@@ -112,6 +276,8 @@
   <button class="btn" onclick="generatePI()">Generate PI</button>
 </div>
 
+
+<!-- ===================== ORIGINAL SCRIPT (UNCHANGED) ===================== -->
 <script>
 let MASTER = {};
 let ITEMS = [];
@@ -139,6 +305,8 @@ async function loadMasters(){
   fillDropdown("itemColor", MASTER.items.map(i=>i.Color).filter(x=>x));
   fillDropdown("itemGSM", MASTER.items.map(i=>i.GSM).filter(x=>x));
   fillDropdown("itemDIA", MASTER.items.map(i=>i.DIA).filter(x=>x));
+
+  buildAllDropdownLists();
 }
 
 function fillDropdown(id, arr){
@@ -214,6 +382,52 @@ async function generatePI(){
 }
 
 loadMasters();
+
+/* ========= Searchable dropdown logic ========= */
+function buildAllDropdownLists(){
+  document.querySelectorAll("select").forEach(sel=>{
+    let list = document.querySelector(`.customDropdown[data-for='${sel.id}']`);
+    list.innerHTML="";
+    [...sel.options].forEach(op=>{
+      let div=document.createElement("div");
+      div.textContent=op.textContent;
+      div.onclick=()=>{
+        sel.value=op.value;
+        list.style.display="none";
+      };
+      list.appendChild(div);
+    });
+  });
+}
+
+function filterDropdown(input, selectId){
+  let list = document.querySelector(`.customDropdown[data-for='${selectId}']`);
+  let sel = document.getElementById(selectId);
+
+  list.innerHTML="";
+  let val = input.value.toLowerCase();
+
+  [...sel.options].forEach(op=>{
+    if(op.textContent.toLowerCase().includes(val)){
+      let div=document.createElement("div");
+      div.textContent=op.textContent;
+      div.onclick=()=>{
+        sel.value=op.value;
+        list.style.display="none";
+      };
+      list.appendChild(div);
+    }
+  });
+
+  list.style.display="block";
+}
+
+document.addEventListener("click",e=>{
+  if(!e.target.classList.contains("searchInput")){
+    document.querySelectorAll(".customDropdown").forEach(d=>d.style.display="none");
+  }
+});
 </script>
+
 </body>
 </html>
